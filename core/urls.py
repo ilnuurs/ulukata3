@@ -3,7 +3,6 @@ from rest_framework.routers import DefaultRouter
 from .views import AddressViewSet,CategoryViewSet,EstablishmentViewSet,FoodViewSet,KitchenViewSet,OrderViewSet
 
 
-
 router = DefaultRouter()
 router.register("establishments", EstablishmentViewSet)
 router.register("kitchens", KitchenViewSet)

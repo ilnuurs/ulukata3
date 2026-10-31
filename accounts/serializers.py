@@ -67,14 +67,28 @@ class ChangePasswordSerializers(serializers.Serializer):
 
 class SendOTPSerializer(serializers.Serializer):
     mail = serializers.EmailField()
+    
+    class Meta:
+        model = User
+        fields = ["id", "name"]
+
 
 
 class VerifyOTPSerializer(serializers.Serializer):
     mail = serializers.EmailField()
     code = serializers.CharField(min_length=6, max_length=6)
 
+    class Meta:
+        model = User
+        fields = ["id", "name"]
+
+
 
 class ResetPasswordSerializer(serializers.Serializer):
     mail = serializers.EmailField()
     code = serializers.CharField(min_length=6, max_length=6)
     new_password = serializers.CharField(min_length=8)
+
+    class Meta:
+        model = User
+        fields = ["id", "name"]

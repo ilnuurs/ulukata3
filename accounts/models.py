@@ -38,7 +38,6 @@ class CustomUserManager(BaseUserManager):
 
 
 class User(AbstractUser):
-    # Возвращаем username в базу, чтобы админка не падала, но делаем его не обязательным
     email = models.EmailField(verbose_name="почта", unique=True, blank=False, null=False)
     phone = PhoneNumberField(verbose_name="телефон", blank=True, null=True) 
     avatar = ResizedImageField(size=[500, 500], crop=['middle', 'center'], upload_to='avatars/', blank=True, null=True, verbose_name="аватар", quality=90)

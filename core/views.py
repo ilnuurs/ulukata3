@@ -1,55 +1,85 @@
-import random
-from django.core.mail import send_mail
+
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from rest_framework import viewsets
-from rest_framework.permissions import IsAuthenticated
-from .models import Order
-from .serializers import OrderSerializer
+from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
+from rest_framework.response import Response  
+from .serializers import AddressSerializer,CategorySerializer,EstablishmentSerializer,FoodSerializer,KitchenSerializer,OrderSerializer
 from .models import Address, Category, Establishment, Food, Kitchen, Order
-from rest_framework_simplejwt.tokens import RefreshToken
-from .serializers import AddressSerializer,CategorySerializer,EstablishmentSerializer,FoodSerializer,KitchenSerializer,OrderItemSerializer,OrderSerializer
-
-
+from .pagination import StandardResultsSetPagination
+from .permission import IsAdminOrReadOnly     
 
 class EstablishmentViewSet(viewsets.ModelViewSet):
     queryset = Establishment.objects.all()
     serializer_class = EstablishmentSerializer
+    pagination_class = StandardResultsSetPagination
+    permission_classes = [IsAdminOrReadOnly]
+    filter_backends = [SearchFilter, OrderingFilter]
+    search_fields = ['name', 'address']
+    ordering_fields = ['name']
+
 
 class KitchenViewSet(viewsets.ModelViewSet):
     queryset = Kitchen.objects.all()
     serializer_class = KitchenSerializer
+    pagination_class = StandardResultsSetPagination
+    permission_classes = [IsAdminOrReadOnly]
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_fields = ['establishment']
+    search_fields = ['name']
+    ordering_fields = ['name']
+
 
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
+    pagination_class = StandardResultsSetPagination
+    permission_classes = [IsAdminOrReadOnly]
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_fields = ['kitchen']
+    search_fields = ['name']
+    ordering_fields = ['name']
 
 class FoodViewSet(viewsets.ModelViewSet):
     queryset = Food.objects.all()
     serializer_class = FoodSerializer
-
+    pagination_class = StandardResultsSetPagination
+    permission_classes = [IsAdminOrReadOnly]
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_fields = ['kitchen']  
+    search_fields = ['name', 'description']
+    ordering_fields = ['price', 'created_at', 'name']
 
 class AddressViewSet(viewsets.ModelViewSet):
     queryset = Address.objects.all()
     serializer_class = AddressSerializer
+    pagination_class = StandardResultsSetPagination
+    permission_classes = [IsAuthenticated]
+    filter_backends = [SearchFilter, OrderingFilter]
+    search_fields = ['city', 'street']
 
-
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_staff or user.is_superuser:
+            return Address.objects.all()
+        return Address.objects.filter(user=user)
 
 
 class OrderViewSet(viewsets.ModelViewSet):
-  queryset = Order.objects.all()
+  queryset = (Order.objects.all()) 
   serializer_class = OrderSerializer
-  permission_classes = [IsAuthenticated]  
+  pagination_class = StandardResultsSetPagination
+  permission_classes = [IsAuthenticated]
+  filter_backends = [DjangoFilterBackend, OrderingFilter]
+  filterset_fields = ['status']
+  ordering_fields = ['created_at']
+  ordering = ['-created_at']
 
   def get_queryset(self):
     user = self.request.user
-
     if user.is_staff or user.is_superuser:
       return Order.objects.all()
-    
     return Order.objects.filter(user=user)
 
   @action(detail=True, methods=['post'], permission_classes=[IsAdminUser])
@@ -60,11 +90,7 @@ class OrderViewSet(viewsets.ModelViewSet):
 
     if new_status not in valid_statuses:
       return Response(
-          {
-              'error': (
-                  f'Неверный статус. Доступные статусы: {valid_statuses}'
-              )
-          },
+          {'error': f'Неверный статус. Доступные статусы: {valid_statuses}'},
           status=status.HTTP_400_BAD_REQUEST,
       )
 
@@ -79,9 +105,119 @@ class OrderViewSet(viewsets.ModelViewSet):
         status=status.HTTP_200_OK,
     )
 
-def send_email_code(email, code):
-    send_mail(subject="Код подтверждения для авторизации",message=f"Ваш код подтверждения: {code}",from_email=None,recipient_list=[email],fail_silently=False,)
-    return True
+
+
+
+
+
+
+
+
+
+# import random
+# from django.core.mail import send_mail
+# from rest_framework import status, viewsets
+# from rest_framework.decorators import action
+# from rest_framework.response import Response
+# from rest_framework.views import APIView
+# from rest_framework import viewsets
+# from rest_framework.permissions import IsAuthenticated
+# from .models import Order
+# from .serializers import OrderSerializer
+# from rest_framework.permissions import IsAdminUser, IsAuthenticated
+# from .models import Address, Category, Establishment, Food, Kitchen, Order
+# from rest_framework_simplejwt.tokens import RefreshToken
+# from .serializers import AddressSerializer,CategorySerializer,EstablishmentSerializer,FoodSerializer,KitchenSerializer,OrderItemSerializer,OrderSerializer
+
+
+
+# class EstablishmentViewSet(viewsets.ModelViewSet):
+#     queryset = Establishment.objects.all()
+#     serializer_class = EstablishmentSerializer
+
+# class KitchenViewSet(viewsets.ModelViewSet):
+#     queryset = Kitchen.objects.all()
+#     serializer_class = KitchenSerializer
+
+# class CategoryViewSet(viewsets.ModelViewSet):
+#     queryset = Category.objects.all()
+#     serializer_class = CategorySerializer
+
+# class FoodViewSet(viewsets.ModelViewSet):
+#     queryset = Food.objects.all()
+#     serializer_class = FoodSerializer
+    
+
+# class AddressViewSet(viewsets.ModelViewSet):
+#     queryset = Address.objects.all()
+#     serializer_class = AddressSerializer
+
+
+
+
+# class OrderViewSet(viewsets.ModelViewSet):
+#   queryset = Order.objects.all()
+#   serializer_class = OrderSerializer
+#   permission_classes = [IsAuthenticated]  
+
+#   def get_queryset(self):
+#     user = self.request.user
+
+#     if user.is_staff or user.is_superuser:
+#       return Order.objects.all()
+    
+#     return Order.objects.filter(user=user)
+
+#   @action(detail=True, methods=['post'], permission_classes=[IsAdminUser])
+#   def change_status(self, request, pk=None):
+#     order = self.get_object()
+#     new_status = request.data.get('status')
+#     valid_statuses = [choice[0] for choice in Order.STATUS_CHOICES]
+
+#     if new_status not in valid_statuses:
+#       return Response(
+#           {
+#               'error': (
+#                   f'Неверный статус. Доступные статусы: {valid_statuses}'
+#               )
+#           },
+#           status=status.HTTP_400_BAD_REQUEST,
+#       )
+
+#     order.status = new_status
+#     order.save()
+
+#     return Response(
+#         {
+#             'message': f'Статус заказа №{order.id} успешно изменен',
+#             'status': order.status,
+#         },
+#         status=status.HTTP_200_OK,
+#     )
+
+# def send_email_code(email, code):
+#     send_mail(subject="Код подтверждения для авторизации",message=f"Ваш код подтверждения: {code}",from_email=None,recipient_list=[email],fail_silently=False,)
+#     return True
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 # class RequestCodeView(APIView):

@@ -1,4 +1,0 @@
-fastAPI
-uvicorn
-pyjwt
-aiohttp

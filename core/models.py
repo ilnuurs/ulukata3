@@ -13,16 +13,21 @@ class Establishment(models.Model):
 
     def __str__(self):
         return self.name
-    
-    
 
-
+    def meta(self):
+        verbose_name = "Заведение"
+        verbose_name_plural = "Заведения"
+        
 class Kitchen(models.Model):
     establishment = models.ForeignKey(Establishment, on_delete=models.CASCADE, related_name="kitchens", verbose_name="Заведение")
     name = models.CharField(max_length=255, verbose_name="Название кухни")
     
     def __str__(self):
         return f"{self.name} ({self.establishment.name})"
+    
+    def meta(self):
+        verbose_name = "Кухня"
+        verbose_name_plural = "Кухни"
 
 
 class Category(models.Model):
@@ -30,19 +35,28 @@ class Category(models.Model):
     name = models.CharField(max_length=255, verbose_name="Название категории")
 
     def __str__(self):
-        return f"{self.name} -> {self.kitchen.name}"
+        return f"{self.name} -> {self.kitchen .name}"
+    
+    def meta(self):
+        verbose_name = "Категория"
+        verbose_name_plural = "Категории"
 
 
 class Food(models.Model):
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name="foods", verbose_name="Категория")
     name = models.CharField(max_length=255, verbose_name="Название блюда")
     price = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)], verbose_name="Цена")
+    kitchen = models.ForeignKey(Kitchen, on_delete=models.CASCADE, related_name="foods", verbose_name="Кухня")
     description = models.TextField(blank=True, null=True, verbose_name="Описание")
     minutes = models.PositiveIntegerField(verbose_name='время готовки (мин)') # Recommended change
     image = ResizedImageField(upload_to='foods/', verbose_name='фотка')
 
     def __str__(self):
         return f"{self.name} — {self.price} сом"
+    
+    def meta(self):
+        verbose_name = "Блюдо"
+        verbose_name_plural = "Блюда"
 
 
 class Address(models.Model):  
@@ -53,7 +67,11 @@ class Address(models.Model):
 
     def __str__(self):
         return f"{self.user.email}: {self.address}"
-
+    
+    def meta(self):
+        verbose_name = "Адрес"
+        verbose_name_plural = "Адреса"
+    
 
 class Order(models.Model):
     STATUS_CHOICES = (
@@ -62,8 +80,7 @@ class Order(models.Model):
         ('delivering', 'Доставляется'),
         ('completed', 'Завершен'),
         ('cancelled', 'Отменен'),
-    )
-    
+    ) 
     user = models.ForeignKey('accounts.User', on_delete=models.CASCADE, related_name='orders', verbose_name='Пользователь') # Fixed lowercase user
     address = models.ForeignKey(Address, on_delete=models.SET_NULL, null=True, verbose_name='Адрес доставки')
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending', verbose_name='Статус заказа')
@@ -71,7 +88,13 @@ class Order(models.Model):
     total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name='Общая сумма')
 
     def __str__(self):
-        return f"Заказ №{self.id} — {self.user.name}" # Fixed extra parenthesis
+        return f"Заказ №{self.id} — {self.user.name}" 
+    
+    def meta(self):
+        verbose_name = "Заказ"
+        verbose_name_plural = "Заказы"
+    
+
 
 
 class OrderItem(models.Model):
@@ -82,3 +105,8 @@ class OrderItem(models.Model):
 
     def __str__(self):
         return f"{self.food.name} x {self.quantity}"
+    
+    def meta(self):
+        verbose_name = "Элемент заказа"
+        verbose_name_plural = "Элементы заказов"
+        

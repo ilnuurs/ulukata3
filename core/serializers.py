@@ -20,7 +20,7 @@ class CategorySerializer(serializers.ModelSerializer):
 class KitchenSerializer(serializers.ModelSerializer):
     categories = CategorySerializer(many=True, read_only=True)
 
-    class Meta:
+    class Meta:     
         model = Kitchen
         fields = "__all__"
 

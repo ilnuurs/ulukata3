@@ -90,3 +90,9 @@ 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
 
 
 pip install django-phonenumber-field phonenumbers django-resized
+
+
+
+ class Meta:
+        model = Category
+        fields = ["id", "name"]

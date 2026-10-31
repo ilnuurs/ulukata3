@@ -1,0 +1,15 @@
+services:
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    depends_on:
+      - db
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: 'uluk_ata'
+      POSTGRES_USER: 'uluk_ata'
+      POSTGRES_PASSWORD: 'uluk_ata'
